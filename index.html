@@ -5,24 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediAssist AI - Open-Source Multi-Modal Medical AI Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-    window.addEventListener("DOMContentLoaded", () => {
-      fetch("https://med-assist-ai-backend-1.onrender.com")
-        .then(response => {
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
-          return response.json();
-        })
-        .then(data => {
-          document.getElementById("result").innerText = data.message;
-        })
-        .catch(error => {
-          console.error("Error fetching:", error);
-          document.getElementById("result").innerText = "Error fetching data.";
-        });
-    });
-  </script>
     <style>
         /* Custom focus styles for better accessibility */
         .focus-ring:focus {
@@ -410,8 +392,19 @@
     </footer>
 
     <script>
-        // Configuration
-        const API_BASE_URL = 'http://localhost:5000';
+        // Configuration - Dynamic backend URL detection
+        function getBackendUrl() {
+            // Check if we're in development (localhost)
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                return 'http://localhost:5000';
+            }
+            
+            // For production, use environment variable or default to your deployed backend
+            const backendUrl = 'https://med-assist-ai-backend-1.onrender.com';
+            return backendUrl;
+        }
+
+        const API_BASE_URL = getBackendUrl();
         let backendConnected = false;
 
         // Check backend connection
@@ -421,13 +414,14 @@
                 if (response.ok) {
                     const data = await response.json();
                     backendConnected = true;
-                    updateBackendStatus(true, `Connected to ${data.model}`);
+                    updateBackendStatus(true, `Connected to ${data.model || 'Backend'}`);
                 } else {
                     throw new Error('Backend not responding');
                 }
             } catch (error) {
+                console.error('Backend connection error:', error);
                 backendConnected = false;
-                updateBackendStatus(false, 'Backend disconnected - using demo mode');
+                updateBackendStatus(false, `Backend disconnected (${API_BASE_URL}) - Check if your backend is running`);
             }
         }
 
@@ -462,20 +456,34 @@
             document.getElementById(elementId).classList.add('hidden');
         }
 
-        // API call helper
+        // API call helper with better error handling
         async function makeApiCall(prompt) {
-            const response = await fetch(`${API_BASE_URL}/api/predict`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt })
-            });
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/predict`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt })
+                });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'API request failed');
+                if (!response.ok) {
+                    let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error || errorMessage;
+                    } catch (e) {
+                        // If response is not JSON, use the status text
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('API call error:', error);
+                throw error;
             }
-
-            return response.json();
         }
 
         // Text Q&A
@@ -494,7 +502,7 @@
 
             try {
                 if (!backendConnected) {
-                    throw new Error('Backend not connected - please check your Flask server');
+                    throw new Error(`Backend not connected. Please check if your backend is running at ${API_BASE_URL}`);
                 }
 
                 const data = await makeApiCall(
@@ -502,7 +510,7 @@
                 );
                 
                 document.getElementById('answer-content').textContent = data.generated_text;
-                document.getElementById('answer-model').textContent = data.model;
+                document.getElementById('answer-model').textContent = data.model || 'AI Model';
                 
                 if (data.usage) {
                     document.getElementById('usage-info').innerHTML = `
@@ -555,7 +563,7 @@
 
             try {
                 if (!backendConnected) {
-                    throw new Error('Backend not connected - please check your Flask server');
+                    throw new Error(`Backend not connected. Please check if your backend is running at ${API_BASE_URL}`);
                 }
 
                 const data = await makeApiCall(
@@ -588,14 +596,14 @@
 
             try {
                 if (!backendConnected) {
-                    throw new Error('Backend not connected - please check your Flask server');
+                    throw new Error(`Backend not connected. Please check if your backend is running at ${API_BASE_URL}`);
                 }
 
                 const data = await makeApiCall(
-                    `You are a medical AI assistant. Analyze this voice input: "${voiceInput}". Provide helpful health guidance and emphasize consulting healthcare professionals. This is educational information only.`
+                    `You are a helpful medical AI assistant. Please provide informative and helpful health guidance for the following voice input: "${voiceInput}". Always remind the user to consult healthcare professionals for medical advice.`
                 );
                 
-                document.getElementById('voice-interpretation').textContent = data.generated_text;
+                document.getElementById('voice-analysis-content').textContent = data.generated_text;
                 document.getElementById('voice-response').classList.remove('hidden');
             } catch (error) {
                 showError('voice-error', `Error: ${error.message}`);
@@ -605,8 +613,217 @@
             }
         }
 
-        // Initialize
-        window.addEventListener('load', checkBackendConnection)
-        </script>
-        </body>
-    </html>
+        // Web Speech API for voice recording
+        let recognition;
+        let isRecording = false;
+
+        function initializeVoiceRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'en-US';
+
+                recognition.onresult = function(event) {
+                    let finalTranscript = '';
+                    let interimTranscript = '';
+
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcript;
+                        } else {
+                            interimTranscript += transcript;
+                        }
+                    }
+
+                    const voiceInput = document.getElementById('voice-text-input');
+                    voiceInput.value = finalTranscript + interimTranscript;
+                };
+
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error:', event.error);
+                    showError('voice-error', `Speech recognition error: ${event.error}`);
+                    stopRecording();
+                };
+
+                recognition.onend = function() {
+                    if (isRecording) {
+                        // Restart if we're still supposed to be recording
+                        recognition.start();
+                    }
+                };
+            } else {
+                console.warn('Speech recognition not supported in this browser');
+            }
+        }
+
+        function startRecording() {
+            if (!recognition) {
+                showError('voice-error', 'Speech recognition not supported in this browser');
+                return;
+            }
+
+            isRecording = true;
+            recognition.start();
+            
+            const recordBtn = document.getElementById('record-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            recordBtn.classList.add('hidden');
+            stopBtn.classList.remove('hidden');
+            
+            hideError('voice-error');
+        }
+
+        function stopRecording() {
+            if (recognition && isRecording) {
+                isRecording = false;
+                recognition.stop();
+                
+                const recordBtn = document.getElementById('record-btn');
+                const stopBtn = document.getElementById('stop-btn');
+                recordBtn.classList.remove('hidden');
+                stopBtn.classList.add('hidden');
+            }
+        }
+
+        // Symptom Checker
+        async function checkSymptoms() {
+            const symptoms = document.getElementById('symptoms-input').value.trim();
+            
+            if (!symptoms) {
+                showError('symptoms-error', 'Please enter your symptoms.');
+                return;
+            }
+
+            hideError('symptoms-error');
+            document.getElementById('symptoms-result').classList.add('hidden');
+            document.getElementById('symptoms-loading').classList.remove('hidden');
+            document.getElementById('check-symptoms-btn').disabled = true;
+
+            try {
+                if (!backendConnected) {
+                    throw new Error(`Backend not connected. Please check if your backend is running at ${API_BASE_URL}`);
+                }
+
+                const data = await makeApiCall(
+                    `You are a medical AI assistant helping with symptom assessment. Based on these symptoms: "${symptoms}", provide helpful information about potential conditions, when to seek medical care, and general health recommendations. Important: This is not a diagnosis - always emphasize consulting healthcare professionals for proper medical evaluation.`
+                );
+                
+                document.getElementById('symptoms-analysis-content').textContent = data.generated_text;
+                document.getElementById('symptoms-result').classList.remove('hidden');
+            } catch (error) {
+                showError('symptoms-error', `Error: ${error.message}`);
+            } finally {
+                document.getElementById('symptoms-loading').classList.add('hidden');
+                document.getElementById('check-symptoms-btn').disabled = false;
+            }
+        }
+
+        // Drug Information
+        async function getDrugInfo() {
+            const drugName = document.getElementById('drug-input').value.trim();
+            
+            if (!drugName) {
+                showError('drug-error', 'Please enter a drug name.');
+                return;
+            }
+
+            hideError('drug-error');
+            document.getElementById('drug-result').classList.add('hidden');
+            document.getElementById('drug-loading').classList.remove('hidden');
+            document.getElementById('get-drug-info-btn').disabled = true;
+
+            try {
+                if (!backendConnected) {
+                    throw new Error(`Backend not connected. Please check if your backend is running at ${API_BASE_URL}`);
+                }
+
+                const data = await makeApiCall(
+                    `You are a medical AI assistant providing drug information. Provide comprehensive information about the medication: "${drugName}". Include uses, common side effects, precautions, and interactions. Always emphasize consulting healthcare professionals and pharmacists for personalized medical advice.`
+                );
+                
+                document.getElementById('drug-info-content').textContent = data.generated_text;
+                document.getElementById('drug-result').classList.remove('hidden');
+            } catch (error) {
+                showError('drug-error', `Error: ${error.message}`);
+            } finally {
+                document.getElementById('drug-loading').classList.add('hidden');
+                document.getElementById('get-drug-info-btn').disabled = false;
+            }
+        }
+
+        // First Aid Guide
+        async function getFirstAid() {
+            const situation = document.getElementById('firstaid-input').value.trim();
+            
+            if (!situation) {
+                showError('firstaid-error', 'Please describe the emergency situation.');
+                return;
+            }
+
+            hideError('firstaid-error');
+            document.getElementById('firstaid-result').classList.add('hidden');
+            document.getElementById('firstaid-loading').classList.remove('hidden');
+            document.getElementById('get-firstaid-btn').disabled = true;
+
+            try {
+                if (!backendConnected) {
+                    throw new Error(`Backend not connected. Please check if your backend is running at ${API_BASE_URL}`);
+                }
+
+                const data = await makeApiCall(
+                    `You are a medical AI assistant providing first aid guidance. For the emergency situation: "${situation}", provide clear, step-by-step first aid instructions. Include when to call emergency services (911). Important: This is emergency guidance - always call emergency services for serious situations.`
+                );
+                
+                document.getElementById('firstaid-guide-content').textContent = data.generated_text;
+                document.getElementById('firstaid-result').classList.remove('hidden');
+            } catch (error) {
+                showError('firstaid-error', `Error: ${error.message}`);
+            } finally {
+                document.getElementById('firstaid-loading').classList.add('hidden');
+                document.getElementById('get-firstaid-btn').disabled = false;
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            checkBackendConnection();
+            initializeVoiceRecognition();
+            
+            // Auto-check backend connection every 30 seconds
+            setInterval(checkBackendConnection, 30000);
+            
+            // Add event listeners for Enter key
+            document.getElementById('question-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    submitQuestion();
+                }
+            });
+
+            document.getElementById('voice-text-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    analyzeVoice();
+                }
+            });
+
+            document.getElementById('symptoms-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkSymptoms();
+                }
+            });
+
+            document.getElementById('drug-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    getDrugInfo();
+                }
+            });
+
+            document.getElementById('firstaid-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    getFirstAid();
+                }
+            });
+        });
+    </script>
