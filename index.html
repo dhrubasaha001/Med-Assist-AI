@@ -145,22 +145,19 @@
                     </p>
                 </div>
                 
-                <div class="mb-4 flex gap-3">
-        <button 
-            onclick="startRecording()" 
-            id="record-btn"
-            class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg focus-ring transition-colors"
-        >
-            🎤 Start Recording
-        </button>
-        <button 
-            onclick="stopRecording()" 
-            id="stop-btn"
-            class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg focus-ring transition-colors hidden"
-        >
-            ⏹️ Stop Recording
-        </button>
-    </div>
+                <button 
+                    onclick="submitQuestion()" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg focus-ring transition-colors"
+                    id="submit-question-btn"
+                >
+                    Submit Question
+                </button>
+                
+                <!-- Loading Indicator -->
+                <div id="text-loading" class="hidden mt-6 flex items-center justify-center">
+                    <div class="spinner"></div>
+                    <span class="ml-2 text-gray-600">Analyzing your question...</span>
+                </div>
                 
                 <!-- Error Display -->
                 <div id="text-error" class="hidden error-message"></div>
@@ -258,59 +255,61 @@
         </div>
     </section>
 
-    <!-- Voice Input Section -->
-    <section id="voice-input" class="py-16 bg-white">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h3 class="text-3xl font-bold text-gray-900 mb-4">Voice Input</h3>
-                <p class="text-gray-600 text-lg">Speak your health questions naturally</p>
-                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mt-4 max-w-2xl mx-auto">
-                    <p class="text-sm text-blue-800">
-                        <strong>Note:</strong> Voice recognition requires HTTPS and microphone permissions. Currently supports manual text input.
-                    </p>
-                </div>
+ <section id="voice-input" class="py-16 bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h3 class="text-3xl font-bold text-gray-900 mb-4">Voice Input</h3>
+            <p class="text-gray-600 text-lg">Speak your health questions naturally</p>
+           
+        </div>
+
+        <div class="bg-gray-50 rounded-lg p-6">
+            <div class="mb-6">
+                <label for="voice-text-input" class="block text-lg font-medium text-gray-700 mb-2">
+                    Type your health question (Voice input simulation)
+                </label>
+                <textarea 
+                    id="voice-text-input" 
+                    class="w-full p-4 border border-gray-300 rounded-lg focus-ring resize-none" 
+                    rows="4" 
+                    placeholder="e.g., I've been having headaches for the past few days..."
+                ></textarea>
             </div>
-            
-            <div class="bg-gray-50 rounded-lg p-6">
-                <div class="mb-6">
-                    <label for="voice-text-input" class="block text-lg font-medium text-gray-700 mb-2">
-                        Type your health question (Voice input simulation)
-                    </label>
-                    <textarea 
-                        id="voice-text-input" 
-                        class="w-full p-4 border border-gray-300 rounded-lg focus-ring resize-none" 
-                        rows="4" 
-                        placeholder="e.g., I've been having headaches for the past few days..."
-                    ></textarea>
-                </div>
-                <button onclick="startListening()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg focus-ring transition-colors mb-4">
+
+            <!-- Voice Recognition Start Button -->
+            <button 
+                onclick="startListening()" 
+                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg focus-ring transition-colors mb-4"
+            >
                 🎤 Start Listening
             </button>
-                <button 
-                    onclick="analyzeVoice()" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg focus-ring transition-colors"
-                    id="analyze-voice-btn"
-                >
-                    Analyze Voice Input
-                </button>
-                
-                <!-- Loading Indicator -->
-                <div id="voice-loading" class="hidden mt-6 flex items-center justify-center">
-                    <div class="spinner"></div>
-                    <span class="ml-2 text-gray-600">Processing voice input...</span>
-                </div>
-                
-                <!-- Error Display -->
-                <div id="voice-error" class="hidden error-message"></div>
-                
-                <!-- Voice Response -->
-                <div id="voice-response" class="hidden mt-6 bg-white rounded-lg p-6 border border-gray-200">
-                    <h4 class="text-xl font-semibold text-gray-900 mb-4">AI Response</h4>
-                    <div id="voice-interpretation" class="text-gray-700 whitespace-pre-wrap"></div>
-                </div>
+
+            <!-- Analyze Button -->
+            <button 
+                onclick="analyzeVoice()" 
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg focus-ring transition-colors"
+                id="analyze-voice-btn"
+            >
+                Analyze Voice Input
+            </button>
+
+            <!-- Loading Indicator -->
+            <div id="voice-loading" class="hidden mt-6 flex items-center justify-center">
+                <div class="spinner"></div>
+                <span class="ml-2 text-gray-600">Processing voice input...</span>
+            </div>
+
+            <!-- Error Display -->
+            <div id="voice-error" class="hidden error-message"></div>
+
+            <!-- Voice Response -->
+            <div id="voice-response" class="hidden mt-6 bg-white rounded-lg p-6 border border-gray-200">
+                <h4 class="text-xl font-semibold text-gray-900 mb-4">AI Response</h4>
+                <div id="voice-interpretation" class="text-gray-700 whitespace-pre-wrap"></div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <!-- About Section -->
     <section id="about" class="py-16 bg-gray-50">
@@ -370,7 +369,7 @@
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Links</h4>
                     <ul class="space-y-2">
-                        <li><a href="https://github.com/dhrubasaha001/Med-Assist-AI" class="text-gray-400 hover:text-white focus-ring rounded">GitHub Repository</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white focus-ring rounded">GitHub Repository</a></li>
                         <li><a href="#" class="text-gray-400 hover:text-white focus-ring rounded">Documentation</a></li>
                         <li><a href="#" class="text-gray-400 hover:text-white focus-ring rounded">Contributing</a></li>
                     </ul>
@@ -395,20 +394,10 @@
             </div>
         </div>
     </footer>
-    <script>
-        // Configuration - Dynamic backend URL detection
-        function getBackendUrl() {
-            // Check if we're in development (localhost)
-            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                return 'http://localhost:5000';
-            }
-            
-            // For production, use environment variable or default to your deployed backend
-            const backendUrl = 'https://med-assist-ai-backend-1.onrender.com';
-            return backendUrl;
-        }
 
-        const API_BASE_URL = getBackendUrl();
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:5000';
         let backendConnected = false;
 
         // Check backend connection
@@ -418,14 +407,13 @@
                 if (response.ok) {
                     const data = await response.json();
                     backendConnected = true;
-                    updateBackendStatus(true, `Connected to ${data.model || 'Backend'}`);
+                    updateBackendStatus(true, `Connected to ${data.model}`);
                 } else {
                     throw new Error('Backend not responding');
                 }
             } catch (error) {
-                console.error('Backend connection error:', error);
                 backendConnected = false;
-                updateBackendStatus(false, `Backend disconnected (${API_BASE_URL}) - Check if your backend is running`);
+                updateBackendStatus(false, 'Backend disconnected - using demo mode');
             }
         }
 
@@ -460,34 +448,20 @@
             document.getElementById(elementId).classList.add('hidden');
         }
 
-        // API call helper with better error handling
+        // API call helper
         async function makeApiCall(prompt) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/predict`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ prompt })
-                });
+            const response = await fetch(`${API_BASE_URL}/api/predict`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt })
+            });
 
-                if (!response.ok) {
-                    let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-                    try {
-                        const errorData = await response.json();
-                        errorMessage = errorData.error || errorMessage;
-                    } catch (e) {
-                        // If response is not JSON, use the status text
-                    }
-                    throw new Error(errorMessage);
-                }
-
-                return await response.json();
-            } catch (error) {
-                console.error('API call error:', error);
-                throw error;
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'API request failed');
             }
+
+            return response.json();
         }
 
         // Text Q&A
@@ -506,7 +480,7 @@
 
             try {
                 if (!backendConnected) {
-                    throw new Error(`Backend not connected. Please check if your backend is running at ${API_BASE_URL}`);
+                    throw new Error('Backend not connected - please check your Flask server');
                 }
 
                 const data = await makeApiCall(
@@ -514,7 +488,7 @@
                 );
                 
                 document.getElementById('answer-content').textContent = data.generated_text;
-                document.getElementById('answer-model').textContent = data.model || 'AI Model';
+                document.getElementById('answer-model').textContent = data.model;
                 
                 if (data.usage) {
                     document.getElementById('usage-info').innerHTML = `
@@ -567,7 +541,7 @@
 
             try {
                 if (!backendConnected) {
-                    throw new Error(`Backend not connected. Please check if your backend is running at ${API_BASE_URL}`);
+                    throw new Error('Backend not connected - please check your Flask server');
                 }
 
                 const data = await makeApiCall(
@@ -584,324 +558,76 @@
             }
         }
 
-        // Voice Input
-        async function analyzeVoice() {
-            const voiceInput = document.getElementById('voice-text-input').value.trim();
-            
-            if (!voiceInput) {
-                showError('voice-error', 'Please enter your health question.');
-                return;
-            }
-
-            hideError('voice-error');
-            document.getElementById('voice-response').classList.add('hidden');
-            document.getElementById('voice-loading').classList.remove('hidden');
-            document.getElementById('analyze-voice-btn').disabled = true;
-
-            try {
-                if (!backendConnected) {
-                    throw new Error('Backend not connected - please check your Flask server');
-                }
-
-                const data = await makeApiCall(
-                    `You are a medical AI assistant. Analyze this voice input: "${voiceInput}". Provide helpful health guidance and emphasize consulting healthcare professionals. This is educational information only.`
-                );
-                
-                // Try both possible element IDs for compatibility
-                const voiceContentElement = document.getElementById('voice-interpretation') || 
-                                          document.getElementById('voice-analysis-content');
-                
-                if (voiceContentElement) {
-                    voiceContentElement.textContent = data.generated_text;
-                } else {
-                    console.error('Voice content element not found');
-                    showError('voice-error', 'UI element not found. Please check your HTML structure.');
-                    return;
-                }
-                
-                document.getElementById('voice-response').classList.remove('hidden');
-            } catch (error) {
-                showError('voice-error', `Error: ${error.message}`);
-            } finally {
-                document.getElementById('voice-loading').classList.add('hidden');
-                document.getElementById('analyze-voice-btn').disabled = false;
-            }
+       async function analyzeVoice() {
+        const voiceInput = document.getElementById('voice-text-input').value.trim();
+        
+        if (!voiceInput) {
+            showError('voice-error', 'Please enter your health question.');
+            return;
         }
 
-        // Web Speech API for voice recording
-        let recognition;
-        let isRecording = false;
+        hideError('voice-error');
+        document.getElementById('voice-response').classList.add('hidden');
+        document.getElementById('voice-loading').classList.remove('hidden');
+        document.getElementById('analyze-voice-btn').disabled = true;
 
-        function initializeVoiceRecognition() {
-            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                recognition = new SpeechRecognition();
-                recognition.continuous = false; // Changed to false for better control
-                recognition.interimResults = true;
-                recognition.lang = 'en-US';
-                recognition.maxAlternatives = 1;
-
-                recognition.onstart = function() {
-                    console.log('Voice recognition started');
-                    isRecording = true;
-                    updateRecordingUI(true);
-                };
-
-                recognition.onresult = function(event) {
-                    let finalTranscript = '';
-                    let interimTranscript = '';
-
-                    for (let i = event.resultIndex; i < event.results.length; i++) {
-                        const transcript = event.results[i][0].transcript;
-                        if (event.results[i].isFinal) {
-                            finalTranscript += transcript;
-                        } else {
-                            interimTranscript += transcript;
-                        }
-                    }
-
-                    const voiceInput = document.getElementById('voice-text-input');
-                    if (voiceInput) {
-                        voiceInput.value = (voiceInput.value || '') + finalTranscript + interimTranscript;
-                    }
-                };
-
-                recognition.onerror = function(event) {
-                    console.error('Speech recognition error:', event.error);
-                    let errorMessage = 'Speech recognition error: ';
-                    
-                    switch(event.error) {
-                        case 'no-speech':
-                            errorMessage += 'No speech detected. Please try again.';
-                            break;
-                        case 'audio-capture':
-                            errorMessage += 'Microphone not available. Please check your microphone.';
-                            break;
-                        case 'not-allowed':
-                            errorMessage += 'Microphone permission denied. Please allow microphone access.';
-                            break;
-                        case 'network':
-                            errorMessage += 'Network error. Please check your internet connection.';
-                            break;
-                        default:
-                            errorMessage += event.error;
-                    }
-                    
-                    showError('voice-error', errorMessage);
-                    stopRecording();
-                };
-
-                recognition.onend = function() {
-                    console.log('Voice recognition ended');
-                    isRecording = false;
-                    updateRecordingUI(false);
-                };
-            } else {
-                console.warn('Speech recognition not supported in this browser');
-                // Hide voice recording buttons if not supported
-                const recordBtn = document.getElementById('record-btn');
-                const stopBtn = document.getElementById('stop-btn');
-                if (recordBtn) recordBtn.style.display = 'none';
-                if (stopBtn) stopBtn.style.display = 'none';
+        try {
+            if (!backendConnected) {
+                throw new Error('Backend not connected - please check your Flask server');
             }
+
+            const data = await makeApiCall(
+                `You are a medical AI assistant. Analyze this voice input: "${voiceInput}". Provide helpful health guidance and emphasize consulting healthcare professionals. This is educational information only.`
+            );
+            
+            document.getElementById('voice-interpretation').textContent = data.generated_text;
+            document.getElementById('voice-response').classList.remove('hidden');
+        } catch (error) {
+            showError('voice-error', `Error: ${error.message}`);
+        } finally {
+            document.getElementById('voice-loading').classList.add('hidden');
+            document.getElementById('analyze-voice-btn').disabled = false;
+        }
+    }
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+        alert("Your browser doesn't support Speech Recognition");
+    } else {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        function startListening() {
+            recognition.start();
         }
 
-        function updateRecordingUI(recording) {
-            const recordBtn = document.getElementById('record-btn');
-            const stopBtn = document.getElementById('stop-btn');
-            
-            if (recordBtn && stopBtn) {
-                if (recording) {
-                    recordBtn.classList.add('hidden');
-                    stopBtn.classList.remove('hidden');
-                    recordBtn.disabled = true;
-                    stopBtn.disabled = false;
-                } else {
-                    recordBtn.classList.remove('hidden');
-                    stopBtn.classList.add('hidden');
-                    recordBtn.disabled = false;
-                    stopBtn.disabled = true;
-                }
-            }
-        }
+        recognition.onresult = function (event) {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById('voice-text-input').value = transcript;
+        };
 
-        function startRecording() {
-            if (!recognition) {
-                showError('voice-error', 'Speech recognition not supported in this browser. Please type your question instead.');
-                return;
-            }
+        recognition.onerror = function (event) {
+            showError('voice-error', "Error: " + event.error);
+        };
+    }
 
-            if (isRecording) {
-                showError('voice-error', 'Recording already in progress.');
-                return;
-            }
+    // Error Handling Helpers
+    function showError(id, message) {
+        const el = document.getElementById(id);
+        el.textContent = message;
+        el.classList.remove('hidden');
+    }
 
-            hideError('voice-error');
-            
-            // Clear previous input
-            const voiceInput = document.getElementById('voice-text-input');
-            if (voiceInput) {
-                voiceInput.value = '';
-            }
+    function hideError(id) {
+        const el = document.getElementById(id);
+        el.textContent = '';
+        el.classList.add('hidden');
+    }
 
-            try {
-                recognition.start();
-            } catch (error) {
-                console.error('Error starting recognition:', error);
-                showError('voice-error', 'Failed to start voice recognition. Please try again.');
-            }
-        }
-
-        function stopRecording() {
-            if (recognition && isRecording) {
-                try {
-                    recognition.stop();
-                } catch (error) {
-                    console.error('Error stopping recognition:', error);
-                }
-            }
-            isRecording = false;
-            updateRecordingUI(false);
-        }
-
-        // Symptom Checker
-        async function checkSymptoms() {
-            const symptoms = document.getElementById('symptoms-input').value.trim();
-            
-            if (!symptoms) {
-                showError('symptoms-error', 'Please enter your symptoms.');
-                return;
-            }
-
-            hideError('symptoms-error');
-            document.getElementById('symptoms-result').classList.add('hidden');
-            document.getElementById('symptoms-loading').classList.remove('hidden');
-            document.getElementById('check-symptoms-btn').disabled = true;
-
-            try {
-                if (!backendConnected) {
-                    throw new Error(`Backend not connected. Please check if your backend is running at ${API_BASE_URL}`);
-                }
-
-                const data = await makeApiCall(
-                    `You are a medical AI assistant helping with symptom assessment. Based on these symptoms: "${symptoms}", provide helpful information about potential conditions, when to seek medical care, and general health recommendations. Important: This is not a diagnosis - always emphasize consulting healthcare professionals for proper medical evaluation.`
-                );
-                
-                document.getElementById('symptoms-analysis-content').textContent = data.generated_text;
-                document.getElementById('symptoms-result').classList.remove('hidden');
-            } catch (error) {
-                showError('symptoms-error', `Error: ${error.message}`);
-            } finally {
-                document.getElementById('symptoms-loading').classList.add('hidden');
-                document.getElementById('check-symptoms-btn').disabled = false;
-            }
-        }
-
-        // Drug Information
-        async function getDrugInfo() {
-            const drugName = document.getElementById('drug-input').value.trim();
-            
-            if (!drugName) {
-                showError('drug-error', 'Please enter a drug name.');
-                return;
-            }
-
-            hideError('drug-error');
-            document.getElementById('drug-result').classList.add('hidden');
-            document.getElementById('drug-loading').classList.remove('hidden');
-            document.getElementById('get-drug-info-btn').disabled = true;
-
-            try {
-                if (!backendConnected) {
-                    throw new Error(`Backend not connected. Please check if your backend is running at ${API_BASE_URL}`);
-                }
-
-                const data = await makeApiCall(
-                    `You are a medical AI assistant providing drug information. Provide comprehensive information about the medication: "${drugName}". Include uses, common side effects, precautions, and interactions. Always emphasize consulting healthcare professionals and pharmacists for personalized medical advice.`
-                );
-                
-                document.getElementById('drug-info-content').textContent = data.generated_text;
-                document.getElementById('drug-result').classList.remove('hidden');
-            } catch (error) {
-                showError('drug-error', `Error: ${error.message}`);
-            } finally {
-                document.getElementById('drug-loading').classList.add('hidden');
-                document.getElementById('get-drug-info-btn').disabled = false;
-            }
-        }
-
-        // First Aid Guide
-        async function getFirstAid() {
-            const situation = document.getElementById('firstaid-input').value.trim();
-            
-            if (!situation) {
-                showError('firstaid-error', 'Please describe the emergency situation.');
-                return;
-            }
-
-            hideError('firstaid-error');
-            document.getElementById('firstaid-result').classList.add('hidden');
-            document.getElementById('firstaid-loading').classList.remove('hidden');
-            document.getElementById('get-firstaid-btn').disabled = true;
-
-            try {
-                if (!backendConnected) {
-                    throw new Error(`Backend not connected. Please check if your backend is running at ${API_BASE_URL}`);
-                }
-
-                const data = await makeApiCall(
-                    `You are a medical AI assistant providing first aid guidance. For the emergency situation: "${situation}", provide clear, step-by-step first aid instructions. Include when to call emergency services (911). Important: This is emergency guidance - always call emergency services for serious situations.`
-                );
-                
-                document.getElementById('firstaid-guide-content').textContent = data.generated_text;
-                document.getElementById('firstaid-result').classList.remove('hidden');
-            } catch (error) {
-                showError('firstaid-error', `Error: ${error.message}`);
-            } finally {
-                document.getElementById('firstaid-loading').classList.add('hidden');
-                document.getElementById('get-firstaid-btn').disabled = false;
-            }
-        }
-
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            checkBackendConnection();
-            initializeVoiceRecognition();
-            
-            // Auto-check backend connection every 30 seconds
-            setInterval(checkBackendConnection, 30000);
-            
-            // Add event listeners for Enter key
-            document.getElementById('question-input').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    submitQuestion();
-                }
-            });
-
-            document.getElementById('voice-text-input').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    analyzeVoice();
-                }
-            });
-
-            document.getElementById('symptoms-input').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    checkSymptoms();
-                }
-            });
-
-            document.getElementById('drug-input').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    getDrugInfo();
-                }
-            });
-
-            document.getElementById('firstaid-input').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    getFirstAid();
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+        // Initialize
+        window.addEventListener('load', checkBackendConnection)
+        </script>
+        </body>
+    </html>
