@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediAssist AI - Open-Source Multi-Modal Medical AI Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      fetch("https://med-assist-ai-backend-1.onrender.com/api/hello")
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then(data => {
+          document.getElementById("result").innerText = data.message;
+        })
+        .catch(error => {
+          console.error("Error fetching:", error);
+          document.getElementById("result").innerText = "Error fetching data.";
+        });
+    });
+  </script>
     <style>
         /* Custom focus styles for better accessibility */
         .focus-ring:focus {
