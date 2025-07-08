@@ -145,19 +145,22 @@
                     </p>
                 </div>
                 
-                <button 
-                    onclick="submitQuestion()" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg focus-ring transition-colors"
-                    id="submit-question-btn"
-                >
-                    Submit Question
-                </button>
-                
-                <!-- Loading Indicator -->
-                <div id="text-loading" class="hidden mt-6 flex items-center justify-center">
-                    <div class="spinner"></div>
-                    <span class="ml-2 text-gray-600">Analyzing your question...</span>
-                </div>
+                <div class="mb-4 flex gap-3">
+        <button 
+            onclick="startRecording()" 
+            id="record-btn"
+            class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg focus-ring transition-colors"
+        >
+            🎤 Start Recording
+        </button>
+        <button 
+            onclick="stopRecording()" 
+            id="stop-btn"
+            class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg focus-ring transition-colors hidden"
+        >
+            ⏹️ Stop Recording
+        </button>
+    </div>
                 
                 <!-- Error Display -->
                 <div id="text-error" class="hidden error-message"></div>
